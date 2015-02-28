@@ -1,13 +1,8 @@
 /*
-  LiquidCrystal Library - Hello World
-
  Demonstrates the use a 16x2 LCD display.  The LiquidCrystal
  library works with all LCD displays that are compatible with the
  Hitachi HD44780 driver. There are many of them out there, and you
  can usually tell them by the 16-pin interface.
-
- This sketch prints "Hello World!" to the LCD
- and shows the time.
 
  The circuit:
  * LCD RS pin to digital pin 12
@@ -32,9 +27,6 @@
  modified 22 Nov 2010
  by Tom Igoe
 
- This example code is in the public domain.
-
- http://www.arduino.cc/en/Tutorial/LiquidCrystal
  */
 
 // include the library code:
@@ -68,7 +60,7 @@ void setup() {
   lcd.begin(16, 2);
   // Print a message to the LCD.
   lcd.setCursor(0, 0);
-  lcd.print(">> Jakes RR v0.3 <<");
+  lcd.print("> Jakes RR v0.4 <");
 }
 
 void printDebug()
@@ -172,27 +164,48 @@ void setEngineSpeed(int toSpeed)
 
 void accelerateTo(int toSpeed)
 {
-    int slackout = 0;
-  
   if(motorSpeed != maxSpeed) //engine is already underway.  go button pressed but already going
   {
+    //it's stopped, need to pull out slack in train.  When this is done, train will be moving slowly
+    pullOutSlack();
+  }
+  
+  //accelerate to maxSpeed now...
+  for ( ; motorSpeed < toSpeed && motorSpeed < maxSpeed; motorSpeed++)
+  {
+    setEngineSpeed(motorSpeed);
+    delay(10);
+  }
+}
+
+void pullOutSlack()
+{
     float slackOutSpeed = (float)maxSpeed * ((float)slackOutSpeedPercentage / 100);
     float startSpikeSpeed = (float)maxSpeed * ((float)startUpSpeedPercentage / 100);
     motorSpeed = (int)startSpikeSpeed;
     setEngineSpeed(motorSpeed);
     delay(startUpSpeedMillis);
     motorSpeed = (int)slackOutSpeed;
-  }
-  for ( ; motorSpeed < toSpeed && motorSpeed < maxSpeed; motorSpeed++)
-  {
     setEngineSpeed(motorSpeed);
-    if (slackout == 0)
-    {
-      delay(slackOutSpeedMillis);
-      slackout = 1;
-    }
-    delay(10);
+    delay(slackOutSpeedMillis);
+  
+}
+
+void pullOutSlackStairSteps()
+{
+  //50% of maxSpeed
+  float halfMaxSpeed = (float)maxSpeed / (float)2;
+  int ihalf = (int)halfMaxSpeed;
+  setEngineSpeed(20);
+  delay(1000);
+  setEngineSpeed(40);
+  delay(1000);
+  for ( ; motorSpeed < (int)ihalf; motorSpeed+=30)
+  {
+    //setEngineSpeed(motorSpeed);
+    //delay(1000);
   }
+  
 }
 
 void decelerateTo(int toSpeed)
